@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 func (cfg *apiConfig) validateChirpHandler(w http.ResponseWriter, r *http.Request) {
@@ -12,7 +13,8 @@ func (cfg *apiConfig) validateChirpHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	type returnVals struct {
-		Valid bool `json:"valid"`
+		CleanedBody string `json:"cleaned_body"`
+		Valid       bool   `json:"valid"`
 	}
 
 	params := parameters{}
@@ -35,7 +37,28 @@ func (cfg *apiConfig) validateChirpHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	respondWithJSON(w, http.StatusOK, returnVals{
-		Valid: true,
+		Valid:       true,
+		CleanedBody: checkProfane(params.Body),
 	})
 
+}
+
+func checkProfane(msg string) string {
+	bannedMap := map[string]bool{
+		"kerfuffle": true,
+		"sharbert":  true,
+		"fornax":    true,
+	}
+
+	words := strings.Fields(msg)
+
+	for i, w := range words {
+		if bannedMap[strings.ToLower(w)] {
+			words[i] = "****"
+		}
+	}
+
+	cleanedMsg := strings.Join(words, " ")
+
+	return cleanedMsg
 }
