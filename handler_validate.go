@@ -2,33 +2,40 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
-type Chirp struct {
-	Body  string `json: "body"`
-	Valid bool   `json: "valid"`
-}
+func (cfg *apiConfig) validateChirpHandler(w http.ResponseWriter, r *http.Request) {
 
-func (cfg *apiConfig) validateHandler(w http.ResponseWriter, r *http.Request) {
-	var chirp Chirp
+	type parameters struct {
+		Body string `json:"body"`
+	}
 
-	err := json.NewDecoder(r.Body).Decode(&chirp)
+	type returnVals struct {
+		Valid bool `json:"valid"`
+	}
+
+	params := parameters{}
+
+	decoder := json.NewDecoder(r.Body)
+
+	err := decoder.Decode(&params)
 	if err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
-	}
-	defer r.Body.Close()
-
-	if len(chirp.Body) > 140 {
-		http.Error(w, "Chirp is too long", http.StatusBadRequest)
-	} else {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(fmt.Sprintf(`{"valid": true}`)))
+		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
+		//http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
 	}
 
-	fmt.Println("Chirp Body: ", chirp.Body)
+	const maxChirpLength = 140
 
-	fmt.Println("Chirp Valid : ", chirp.Valid)
+	if len(params.Body) > maxChirpLength {
+		respondWithError(w, http.StatusBadRequest, "Chirp is too long", nil)
+		//http.Error(w, "Chirp is too long", http.StatusBadRequest)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, returnVals{
+		Valid: true,
+	})
 
 }
