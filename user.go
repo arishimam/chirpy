@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"net/http"
@@ -33,15 +32,22 @@ func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// sqlEmail := toNullString(parameters.Email)
+	sqlEmail := toNullString(parameters.Email)
 
-	/*
-		user, err := cfg.dbQueries.CreateUser(r.Context(), sqlEmail)
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
-			return
-		}
-	*/
+	user, err := cfg.dbQueries.CreateUser(r.Context(), sqlEmail)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
+		return
+	}
+
+	userMapped := User{
+		user.ID.UUID,
+		user.CreatedAt.Time,
+		user.UpdatedAt.Time,
+		user.Email.String,
+	}
+
+	respondWithJSON(w, http.StatusCreated, userMapped)
 
 }
 
