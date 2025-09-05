@@ -3,10 +3,9 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"github.com/google/uuid"
 	"net/http"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type User struct {
@@ -41,7 +40,7 @@ func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	userMapped := User{
-		user.ID.UUID,
+		user.ID,
 		user.CreatedAt.Time,
 		user.UpdatedAt.Time,
 		user.Email.String,
