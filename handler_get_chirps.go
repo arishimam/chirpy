@@ -1,6 +1,10 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/google/uuid"
+)
 
 func (cfg *apiConfig) getChirpsHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -25,16 +29,29 @@ func (cfg *apiConfig) getChirpsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // one chirp
-/*
 func (cfg *apiConfig) getChirpHandler(w http.ResponseWriter, r *http.Request) {
 
-	dbChirp, err := cfg.dbQueries.GetChirp(r.Context())
+	chirpIDStr := r.PathValue("chirpId")
+
+	chirpID, err := uuid.Parse(chirpIDStr)
 	if err != nil {
-		// insert error
+		respondWithError(w, http.StatusBadRequest, "invalid chirpId format", err)
+	}
+
+	dbChirp, err := cfg.dbQueries.GetChirp(r.Context(), chirpID)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "chirp not found", err)
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, dbChirp)
+	chirp := Chirp{
+		ID:        dbChirp.ID,
+		CreatedAt: dbChirp.CreatedAt,
+		UpdatedAt: dbChirp.UpdatedAt,
+		Body:      dbChirp.Body,
+		UserId:    dbChirp.UserID,
+	}
+
+	respondWithJSON(w, http.StatusOK, chirp)
 
 }
-*/
