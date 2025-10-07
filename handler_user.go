@@ -3,9 +3,11 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
-	"github.com/google/uuid"
 	"net/http"
 	"time"
+
+	"github.com/arishimam/chirpy/internal/database"
+	"github.com/google/uuid"
 )
 
 type User struct {
@@ -18,7 +20,8 @@ type User struct {
 func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	type Parameters struct {
-		Email string `json:"email"`
+		Password string `json:"password"`
+		Email    string `json:"email"`
 	}
 
 	parameters := Parameters{}
@@ -31,9 +34,16 @@ func (cfg *apiConfig) createUserHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	hashedPass := parameters.Password
 	sqlEmail := toNullString(parameters.Email)
 
-	user, err := cfg.dbQueries.CreateUser(r.Context(), sqlEmail)
+	createUserParams := database.CreateUserParams{
+		Email:          sqlEmail,
+		HashedPassword: hashedPass,
+	}
+
+	user, err := cfg.dbQueries.CreateUser(r.Context(), createUserParams)
+
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Couldn't decode parameters", err)
 		return

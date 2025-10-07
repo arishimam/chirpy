@@ -3,10 +3,9 @@ package auth
 import "github.com/alexedwards/argon2id"
 
 func HashPassword(password string) (string, error) {
-	hashedPass, err := argon2id.CreateHash(password)
+	hashedPass, err := argon2id.CreateHash(password, argon2id.DefaultParams)
 	if err != nil {
 		return "", err
-
 	}
 
 	return hashedPass, nil
