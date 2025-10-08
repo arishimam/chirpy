@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -19,21 +18,30 @@ func TestHashPassword(t *testing.T) {
 }
 
 func TestCheckPasswordHash(t *testing.T) {
-	test := "hello"
-	pass1, err := HashPassword(test)
+	password := "hello"
+
+	hash, err := HashPassword(password)
 	if err != nil {
-		t.Errorf("Error occured when calling HashPassword function")
+		t.Errorf("Error calling HashPassword: %v", err)
 	}
 
-	pass2, err := HashPassword(test)
+	match, err := CheckPasswordHash(password, hash)
 	if err != nil {
-		t.Errorf("Error occured when calling HashPassword function")
+		t.Errorf("Error calling CheckPasswordHash: %v", err)
 	}
 
-	if pass1 == pass2 {
-		t.Errorf("pass1 and pass2 should be hashed to different passwords")
+	if !match {
+		t.Errorf("password and hashed password do not match!")
 	}
-	//fmt.Println("pass1 ", pass1)
-	//fmt.Println("pass2 ", pass2)
+
+	// negative case
+	wrongPassword := "helloooo"
+
+	match, _ = CheckPasswordHash(wrongPassword, hash)
+
+	if match {
+		t.Errorf("wrong password and hashed password should not match!")
+
+	}
 
 }
